@@ -13,6 +13,9 @@ void display_con(const T & con) {
     }
     cout << endl;
 }
+
+///main.cpp用于MathSet的测试
+
 void test_MathSetHelper_true() {
     int nums1[] = {9,7,8,1,2,3};
     int nums2[] = {4,5,1,2,};
@@ -143,11 +146,25 @@ void test_MathSet4() {
     cout << s3.contain_with_order(s4);
 }
 
+//测试拷贝/移动相关操作
 void test_MathSet5() {
-    MathSet<int> s1;
-//    MathSet s2 (s1);
+    auto s1 = MathSet<int>::from_initializer_list({1,2,3,4});
+    cout << "test move: " << endl;
+    MathSet<int> s2 (std::move(s1));
+    cout << s2 << endl;
+    MathSet<int> s3;
+    s3 = std::move(s2);
+    cout << s3 << endl;
+
+    cout << "test copy: " << endl;
+    MathSet<int> s4(s3);
+    cout << s4 << endl;
+
+    MathSet<int> s5 = s4;
+    cout << s5 << endl;
 }
 
+//测试has_reserve元函数
 void test_has_reserve() {
     cout.setf(ios_base::boolalpha);
     cout << "forward_list not have push back: " << endl;
@@ -179,6 +196,8 @@ int main() {
     cout << "--------------------------------------" << endl;
     cout << "test MathSet4: " << endl;
     test_MathSet4();
-
+    cout << "--------------------------------------" << endl;
+    cout << "test MathSet5: " << endl;
+    test_MathSet5();
     return 0;
 }
