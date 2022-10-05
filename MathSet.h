@@ -45,6 +45,8 @@ struct has_reserve<T, void_t<decltype(declval<T>().reserve(0))>> : std::true_typ
  * @tparam Con  底层容器
  * @tparam p    p=false 无法应用与sort的容器，确保其插入是有有序的
  */
+
+ ///warring: 此class仅用于辅助MathSet实现，请不要直接使用
 template<typename T, typename Con , bool p = false>
 class MathSetHelper {
 protected:
@@ -155,7 +157,6 @@ public:
         difference_impl(rhs,ret,typename has_reserve<Con>::type());
         return ret;
     }
-public:
 };
 
 /**
@@ -172,14 +173,8 @@ public:
     //父类别名
     using super = typename MathSetHelper<T,Con, false>::self;
 
-    MathSetHelper() = default;
-    //区间构造
-    template<typename InputIter>
-    MathSetHelper(InputIter first, InputIter last): super(first,last) { }
-
-    //通过底层集合来构造一个MathSetHelper,使用移动方式
-    //此构造函数用于辅助于并，交，差函数
-    explicit MathSetHelper(Con && con): super(std::move(con)) { }
+    //继承构造函数
+    using MathSetHelper<T,Con, false>::MathSetHelper;
 
     ~MathSetHelper() override = default;
 
@@ -207,10 +202,12 @@ public:
 
 using std::make_unique;
 
+
 //默认使用std::set作为底层容器
-//你可以宏定义__MATSET_DEFAULT_CON_STD_VECTOR来将std::vector作为默认的底层容器
+//你可以在#include"MathSet"前定义宏定义__MATSET_DEFAULT_CON_STD_VECTOR来将std::vector作为默认的底层容器
+//#define __MATSET_DEFAULT_CON_STD_VECTOR
 //注意如果你使用了其他的任意集合——请确保他们有相应的接口。
-//MathSet的性质是底层集合的性质
+//MathSet的性质是底层容器的性质
 //例如vector中元素可以重复，无需插入，那么用vector为基础模板的MathSet的行为表现的和vector一样
 #if defined(__MATSET_DEFAULT_CON_STD_VECTOR)
 template <typename T, typename Con = std::vector<T>>
@@ -224,6 +221,9 @@ private:
     //使用unique_ptr指向MathSetHelper,确保方法的一致性。
     std::unique_ptr<base_type> m_data;
     using object_type = MathSetHelper<T,Con,has_sort<Con>::value>;
+
+    //通过容器来构造MathSet,使用移动操作
+    explicit MathSet(Con && con): m_data(std::make_unique<object_type>(std::move(con))) { }
 public:
     using iterator = typename base_type::iterator;
     using const_iterator = typename base_type::const_iterator;
@@ -232,8 +232,6 @@ public:
     MathSet(): m_data(make_unique<object_type>()) { }
     template<typename InputIter>
     MathSet(InputIter first, InputIter last): m_data(make_unique<object_type>(first,last)) { }
-    //通过容器来构造MathSet,使用移动操作
-    explicit MathSet(Con && con): m_data(std::make_unique<object_type>(std::move(con))) { }
 
     //此集合不提供initializer构造(这样做或导致重载匹配与预期不符合)
     //但是可以用这个方法来代替

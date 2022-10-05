@@ -1,3 +1,4 @@
+//#define __MATSET_DEFAULT_CON_STD_VECTOR
 #include <iostream>
 #include <set>
 #include <list>
@@ -5,6 +6,7 @@
 #include <type_traits>
 #include <forward_list>
 using namespace std;
+
 
 template <typename T>
 void display_con(const T & con) {
